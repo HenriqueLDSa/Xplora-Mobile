@@ -38,7 +38,12 @@ class WelcomePage extends StatelessWidget {
                       width: 200,
                       height: 55, 
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => LoginPage()),
+                          // );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xCC451992), // Set the background color here
                           shape: RoundedRectangleBorder(
@@ -53,7 +58,12 @@ class WelcomePage extends StatelessWidget {
                       width: 200, 
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(builder: (context) => SignUpPage()),
+                          // );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xCC451992), // Set the background color here
                           shape: RoundedRectangleBorder(
