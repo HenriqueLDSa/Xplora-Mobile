@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:xplora/welcome.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const SignUpApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -11,7 +11,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp( // Wrap in MaterialApp
+    return MaterialApp(
+      // Wrap in MaterialApp
       title: 'Xplora',
       theme: ThemeData(
         primaryColor: Color(0xFF451992),
