@@ -14,7 +14,7 @@ class LoginPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center, // Centers the Row
               children: [
                 Image.asset(
-                  'assets/img/xplora-logo.png',
+                  'assets/images/xplora.png',
                   width: 250,
                 ),
               ],
@@ -31,10 +31,10 @@ class LoginPage extends StatelessWidget {
                       height: 55, 
                       child: ElevatedButton(
                         onPressed: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(builder: (context) => LoginPage()),
-                          // );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Placeholder(/*Dashboard*/)),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xCC451992), // Set the background color here

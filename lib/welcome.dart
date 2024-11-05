@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xplora/login.dart';
+import 'package:xplora/sign_up_page.dart';
+
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -15,7 +17,7 @@ class WelcomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center, // Centers the Row
               children: [
                 Image.asset(
-                  'assets/img/xplora-logo.png',
+                  'assets/images/xplora.png',
                   width: 250,
                 ),
               ],
@@ -60,10 +62,10 @@ class WelcomePage extends StatelessWidget {
                       height: 55,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(builder: (context) => SignUpPage()),
-                          // );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SignUpPage()),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xCC451992), // Set the background color here

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:xplora/login.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -95,7 +96,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: 250,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle registration logic
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Placeholder(/*Dashboard*/)),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(
@@ -128,7 +132,10 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Add your login logic here
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
                   },
                   child: const Text(
                     "Log in",
