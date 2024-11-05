@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:xplora/login.dart';
 
-class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,14 +19,6 @@ class WelcomePage extends StatelessWidget {
                 ),
               ],
             ),
-            Text(
-              'discover the world, your way',
-              style: TextStyle(
-                fontStyle: FontStyle.italic, // Correct usage of FontStyle
-                fontSize: 16, // Optional: set the font size
-                color: Colors.black, // Optional: set the text color
-              ),
-            ),
             SizedBox(height: 150), // Vertical space between buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -40,29 +31,9 @@ class WelcomePage extends StatelessWidget {
                       height: 55, 
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xCC451992), // Set the background color here
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
-                          ),
-                        ),
-                        child: Text('Login', style: TextStyle(color: Colors.white, fontSize: 16),),
-                      ),
-                    ),
-                    SizedBox(height: 20), // Vertical space between buttons
-                    SizedBox(
-                      width: 200, 
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: () {
                           // Navigator.push(
                           //   context,
-                          //   MaterialPageRoute(builder: (context) => SignUpPage()),
+                          //   MaterialPageRoute(builder: (context) => LoginPage()),
                           // );
                         },
                         style: ElevatedButton.styleFrom(
@@ -71,7 +42,7 @@ class WelcomePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
                           ),
                         ),
-                        child: Text('Register', style: TextStyle(color: Colors.white, fontSize: 16),),
+                        child: Text('Login', style: TextStyle(color: Colors.white, fontSize: 16),),
                       ),
                     ),
                   ],
