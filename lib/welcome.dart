@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:xplora/login.dart';
-import 'package:xplora/sign_up_page.dart';
+import 'package:xplora/login_page.dart';
+import 'package:xplora/register_page.dart';
 
 
 class WelcomePage extends StatelessWidget {
@@ -53,7 +53,7 @@ class WelcomePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
                           ),
                         ),
-                        child: Text('Login', style: TextStyle(color: Colors.white, fontSize: 16),),
+                        child: Text('Sign In', style: TextStyle(color: Colors.white, fontSize: 16),),
                       ),
                     ),
                     SizedBox(height: 20), // Vertical space between buttons
@@ -73,7 +73,7 @@ class WelcomePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
                           ),
                         ),
-                        child: Text('Register', style: TextStyle(color: Colors.white, fontSize: 16),),
+                        child: Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16),),
                       ),
                     ),
                   ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xplora/login.dart';
+import 'package:xplora/login_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -110,7 +110,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     child: const Text(
-                      'Register',
+                      'Sign Up',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.white,
@@ -137,8 +137,11 @@ class _SignUpPageState extends State<SignUpPage> {
                       MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // Removes padding
+                  ),
                   child: const Text(
-                    "Log in",
+                    "Sign in",
                     style: TextStyle(color: Color.fromRGBO(4, 49, 199, 1)),
                   ),
                 ),
