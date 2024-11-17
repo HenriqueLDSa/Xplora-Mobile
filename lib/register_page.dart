@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:xplora/dashboard_page.dart';
 import 'package:xplora/login_page.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -6,7 +7,7 @@ class SignUpPage extends StatefulWidget {
 
   @override
   // ignore: library_private_types_in_public_api
-  _SignUpPageState createState() => _SignUpPageState(); // Implement createState
+  _SignUpPageState createState() => _SignUpPageState();
 }
 
 class _SignUpPageState extends State<SignUpPage> {
@@ -18,17 +19,13 @@ class _SignUpPageState extends State<SignUpPage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            //Logo row field
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Image.asset(
                 'assets/images/xplora.png',
                 width: 250,
               ),
-            ] //Children
-                ),
+            ]),
             const SizedBox(height: 20),
-
-            //First Name text field
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -39,8 +36,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
             const SizedBox(height: 20),
-
-            //Last Name text field
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -51,8 +46,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
             const SizedBox(height: 20),
-
-            //Email text field
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -63,8 +56,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
             const SizedBox(height: 20),
-
-            //Password text field
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -75,8 +66,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
             const SizedBox(height: 20),
-
-            //Confirm Password text field
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -87,8 +76,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
             const SizedBox(height: 20),
-
-            //Register button
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -98,12 +85,12 @@ class _SignUpPageState extends State<SignUpPage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Placeholder(/*Dashboard*/)),
+                        MaterialPageRoute(
+                            builder: (context) => DashboardPage()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(
-                          0xFF6C4AB6), // Adjust to match the purple button color
+                      backgroundColor: const Color(0xFF6C4AB6),
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -121,8 +108,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
             const SizedBox(height: 2),
-
-            //Login link
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -138,7 +123,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     );
                   },
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero, // Removes padding
+                    padding: EdgeInsets.zero,
                   ),
                   child: const Text(
                     "Sign in",
