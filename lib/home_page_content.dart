@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'trip.dart'; // Import your Trip model
+import 'trip.dart';
 
 class HomePageContent extends StatefulWidget {
   const HomePageContent({super.key});
@@ -91,14 +91,69 @@ class _HomePageContentState extends State<HomePageContent> {
                           padding: EdgeInsets.symmetric(vertical: 4.0),
                           child: Container(
                             width: double.infinity,
-                            height: 90,
-                            color: Colors.amber,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            height: 100,
+                            decoration: BoxDecoration(
+                                color: Color(0xFFEAEAEA),
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(trip.name),
-                                Text(trip.city),
-                                Text('${trip.startDate} - ${trip.endDate}'),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            trip.name,
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                trip.city,
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                              Text(
+                                                '${trip.startDate} - ${trip.endDate}',
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  children: [
+                                    SizedBox(
+                                      width: 110,
+                                      height: 100,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.asset(
+                                          'assets/images/new-york.png',
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.center,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
