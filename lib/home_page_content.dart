@@ -28,13 +28,11 @@ class _HomePageContentState extends State<HomePageContent> {
   }
 
   Future<void> _loadTrips() async {
-    String hardcodedUserId = '672e96585f0a5da809405a85'; // Hardcoded userId
-
     final prefs = await SharedPreferences.getInstance();
     final String? userId = prefs.getString('userId'); // Not being used for now
 
     setState(() {
-      _futureItems = fetchTrips(hardcodedUserId); // Use hardcoded userId
+      _futureItems = fetchTrips(userId!); // Use hardcoded userId
     });
   }
 
