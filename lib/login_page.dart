@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xplora/dashboard_page.dart';
 import 'package:xplora/register_page.dart';
+import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +16,57 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  var logger = Logger(
+    printer: PrettyPrinter(),
+  );
+
+  var loggerNoStack = Logger(
+    printer: PrettyPrinter(methodCount: 0),
+  );
+
+  String? userId, firstName, lastName, email;
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  Future<bool> doLogin(String reqEmail, String reqPassword) async {
+    final response = await http.post(Uri.parse('https://xplora.fun/api/login'),
+        body: jsonEncode({'email': reqEmail, 'password': reqPassword}),
+        headers: {'Content-Type': 'application/json'});
+
+    logger.d('Email sent: $reqEmail\nPassword sent: $reqPassword');
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      userId = jsonResponse['id'];
+      firstName = jsonResponse['firstName'];
+      lastName = jsonResponse['lastName'];
+      email = jsonResponse['email'];
+
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('userId', userId!);
+      prefs.setString('firstName', firstName!);
+      prefs.setString('lastName', lastName!);
+      prefs.setString('email', email!);
+
+      logger.i('Login Successful: $firstName $lastName $userId');
+      return true;
+    }
+
+    logger.e('Failed to log in: ${response.body}');
+    return false;
+  }
+
+  void navigateToDashboard() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DashboardPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,22 +82,28 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ]),
             const SizedBox(height: 70),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 250,
-                  child: CustomTextField(label: "Email"),
+                  child: CustomTextField(
+                    label: "Email",
+                    controller: emailController,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 250,
-                  child: CustomTextField(label: "Password"),
+                  child: CustomTextField(
+                      label: "Password",
+                      controller: passwordController,
+                      obscureText: true),
                 ),
               ],
             ),
@@ -53,11 +115,20 @@ class _LoginPageState extends State<LoginPage> {
                   width: 250,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => DashboardPage()),
-                      );
+                      final email = emailController.text.trim();
+                      final password = passwordController.text.trim();
+
+                      doLogin(email, password).then((loginSuccess) {
+                        if (loginSuccess && mounted) {
+                          navigateToDashboard();
+                        } else if (mounted) {
+                          Fluttertoast.showToast(
+                            msg: "Login unsuccessful. Please try again!",
+                            toastLength: Toast.LENGTH_LONG,
+                            gravity: ToastGravity.BOTTOM,
+                          );
+                        }
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6C4AB6),
@@ -112,16 +183,19 @@ class _LoginPageState extends State<LoginPage> {
 class CustomTextField extends StatelessWidget {
   final String label;
   final bool obscureText;
+  final TextEditingController? controller;
 
   const CustomTextField({
     super.key,
     required this.label,
     this.obscureText = false,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
         labelText: label,
