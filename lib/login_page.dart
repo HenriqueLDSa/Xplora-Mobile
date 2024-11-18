@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
       return true;
     }
 
-    logger.e('Failed to log in: ${response.body}');
+    logger.e('Failed to login: ${response.body}');
     return false;
   }
 
@@ -115,15 +115,15 @@ class _LoginPageState extends State<LoginPage> {
                   width: 250,
                   child: ElevatedButton(
                     onPressed: () {
-                      final email = emailController.text.trim();
-                      final password = passwordController.text.trim();
+                      final emailText = emailController.text.trim();
+                      final passwordText = passwordController.text.trim();
 
-                      doLogin(email, password).then((loginSuccess) {
+                      doLogin(emailText, passwordText).then((loginSuccess) {
                         if (loginSuccess && mounted) {
                           navigateToDashboard();
                         } else if (mounted) {
                           Fluttertoast.showToast(
-                            msg: "Login unsuccessful. Please try again!",
+                            msg: "Invalid login or password",
                             toastLength: Toast.LENGTH_LONG,
                             gravity: ToastGravity.BOTTOM,
                           );

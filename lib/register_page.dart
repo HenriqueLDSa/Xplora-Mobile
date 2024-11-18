@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:logger/logger.dart';
 import 'package:xplora/dashboard_page.dart';
 import 'package:xplora/login_page.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -11,6 +16,69 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  var logger = Logger(
+    printer: PrettyPrinter(),
+  );
+
+  var loggerNoStack = Logger(
+    printer: PrettyPrinter(methodCount: 0),
+  );
+
+  String? userId, firstName, lastName, email;
+
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPassController = TextEditingController();
+
+  Future<bool> doRegister(String reqFirstName, String reqLastName,
+      String reqEmail, String reqPassword) async {
+    Map<String, dynamic> jsonPayload = {
+      "first_name": reqFirstName,
+      "last_name": reqLastName,
+      "email": reqEmail,
+      "password": reqPassword
+    };
+
+    final response = await http.post(
+        Uri.parse('https://xplora.fun/api/register'),
+        body: jsonEncode(jsonPayload),
+        headers: {'Content-type': 'application/json'});
+
+    logger.d('Payload sent: $jsonPayload');
+
+    if (response.statusCode == 201) {
+      Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      userId = ""; //Edit API to return the userId as well
+      firstName = jsonResponse['first_name'];
+      lastName = jsonResponse['last_name'];
+      email = jsonResponse['email'];
+
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('userId', userId!);
+      prefs.setString('firstName', firstName!);
+      prefs.setString('lastName', lastName!);
+      prefs.setString('email', email!);
+
+      logger.i('Register Successful: $jsonResponse');
+      return true;
+    }
+
+    logger.e('Failed to register: ${response.body}');
+    return false;
+  }
+
+  void navigateToDashboard() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DashboardPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,52 +94,67 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ]),
             const SizedBox(height: 20),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 250,
-                  child: CustomTextField(label: "First Name"),
+                  child: CustomTextField(
+                    label: "First Name",
+                    controller: firstNameController,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 250,
-                  child: CustomTextField(label: "Last Name"),
+                  child: CustomTextField(
+                    label: "Last Name",
+                    controller: lastNameController,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 250,
-                  child: CustomTextField(label: "Email"),
+                  child: CustomTextField(
+                    label: "Email",
+                    controller: emailController,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 250,
-                  child: CustomTextField(label: "Password"),
+                  child: CustomTextField(
+                    label: "Password",
+                    controller: passwordController,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 250,
-                  child: CustomTextField(label: "Confirm Password"),
+                  child: CustomTextField(
+                    label: "Confirm Password",
+                    controller: confirmPassController,
+                  ),
                 ),
               ],
             ),
@@ -83,11 +166,24 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: 250,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => DashboardPage()),
-                      );
+                      final firstNameText = firstNameController.text.trim();
+                      final lastNameText = lastNameController.text.trim();
+                      final emailText = emailController.text.trim();
+                      final passwordText = passwordController.text.trim();
+
+                      doRegister(firstNameText, lastNameText, emailText,
+                              passwordText)
+                          .then((registerSuccess) {
+                        if (registerSuccess && mounted) {
+                          navigateToDashboard();
+                        } else if (mounted) {
+                          Fluttertoast.showToast(
+                            msg: "Email already exists",
+                            toastLength: Toast.LENGTH_LONG,
+                            gravity: ToastGravity.BOTTOM,
+                          );
+                        }
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6C4AB6),
@@ -142,16 +238,19 @@ class _SignUpPageState extends State<SignUpPage> {
 class CustomTextField extends StatelessWidget {
   final String label;
   final bool obscureText;
+  final TextEditingController? controller;
 
   const CustomTextField({
     super.key,
     required this.label,
     this.obscureText = false,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
         labelText: label,
