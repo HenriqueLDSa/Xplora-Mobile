@@ -22,20 +22,6 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: Icon(
-              Icons.add,
-              color: Color(0xFF6A0DAD),
-              size: 40.0,
-            ),
-          ),
-        ],
-      ),
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
