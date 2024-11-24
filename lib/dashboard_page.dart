@@ -13,9 +13,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   final List<Widget> _pages = [
     HomePageContent(),
-    Center(
-      child: Text('Profile Page', style: TextStyle(fontSize: 24)),
-    ),
+    Placeholder(),
   ];
 
   @override
