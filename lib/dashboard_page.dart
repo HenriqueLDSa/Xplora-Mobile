@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:xplora/trip_details_page.dart';
 import 'home_page_content.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -11,12 +12,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    HomePageContent(),
-    Center(
-      child: Text('Profile Page', style: TextStyle(fontSize: 24)),
-    ),
-  ];
+  final List<Widget> _pages = [HomePageContent(), TripDetailsPage()];
 
   @override
   Widget build(BuildContext context) {
