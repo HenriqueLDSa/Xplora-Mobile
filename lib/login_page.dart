@@ -135,7 +135,9 @@ class _LoginPageState extends State<LoginPage> {
                             Fluttertoast.showToast(
                                 msg: "All fields are required",
                                 toastLength: Toast.LENGTH_LONG,
-                                gravity: ToastGravity.BOTTOM);
+                                gravity: ToastGravity.TOP,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white);
                             return;
                           }
 
@@ -144,10 +146,11 @@ class _LoginPageState extends State<LoginPage> {
                               navigateToDashboard();
                             } else if (mounted) {
                               Fluttertoast.showToast(
-                                msg: "Invalid login or password",
-                                toastLength: Toast.LENGTH_LONG,
-                                gravity: ToastGravity.BOTTOM,
-                              );
+                                  msg: "Invalid login or password",
+                                  toastLength: Toast.LENGTH_LONG,
+                                  gravity: ToastGravity.TOP,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white);
                             }
                           });
                         },

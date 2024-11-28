@@ -100,10 +100,11 @@ class _HomePageContentState extends State<HomePageContent> {
       if (mimeType == null) {
         logger.e('Failed to detect MIME type');
         Fluttertoast.showToast(
-          msg: 'Unexpected Error',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-        );
+            msg: 'Unexpected Error',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            backgroundColor: Colors.red,
+            textColor: Colors.white);
         return;
       }
 
@@ -144,10 +145,11 @@ class _HomePageContentState extends State<HomePageContent> {
         const int maxSizeInBytes = 5 * 1024 * 1024;
         if (file.lengthSync() > maxSizeInBytes) {
           Fluttertoast.showToast(
-            msg: "File size must be less than 5MB",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM,
-          );
+              msg: "File size must be less than 5MB",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              backgroundColor: Colors.red,
+              textColor: Colors.white);
           return;
         }
 
@@ -156,10 +158,11 @@ class _HomePageContentState extends State<HomePageContent> {
 
         if (mimeType != 'image/jpeg' && mimeType != 'image/png') {
           Fluttertoast.showToast(
-            msg: "Only JPEG and PNG files are allowed",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM,
-          );
+              msg: "Only JPEG and PNG files are allowed",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              backgroundColor: Colors.red,
+              textColor: Colors.white);
           return;
         }
 
@@ -334,7 +337,9 @@ class _HomePageContentState extends State<HomePageContent> {
                   Fluttertoast.showToast(
                       msg: "All fields are required",
                       toastLength: Toast.LENGTH_LONG,
-                      gravity: ToastGravity.BOTTOM);
+                      gravity: ToastGravity.TOP,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
                   return;
                 }
 
@@ -346,7 +351,9 @@ class _HomePageContentState extends State<HomePageContent> {
                   Fluttertoast.showToast(
                       msg: "Please choose a valid date range",
                       toastLength: Toast.LENGTH_LONG,
-                      gravity: ToastGravity.BOTTOM);
+                      gravity: ToastGravity.TOP,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
                   return;
                 }
 

@@ -224,7 +224,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           Fluttertoast.showToast(
                               msg: "All fields are required",
                               toastLength: Toast.LENGTH_LONG,
-                              gravity: ToastGravity.BOTTOM);
+                              gravity: ToastGravity.TOP,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white);
                           return;
                         }
 
@@ -232,7 +234,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           Fluttertoast.showToast(
                               msg: "Passwords don't match",
                               toastLength: Toast.LENGTH_LONG,
-                              gravity: ToastGravity.BOTTOM);
+                              gravity: ToastGravity.TOP,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white);
                           return;
                         }
 
@@ -246,7 +250,9 @@ class _SignUpPageState extends State<SignUpPage> {
                               msg:
                                   "Password is not valid:\n${_errorMessage.substring(0, _errorMessage.length - 1)}",
                               toastLength: Toast.LENGTH_LONG,
-                              gravity: ToastGravity.BOTTOM);
+                              gravity: ToastGravity.TOP,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white);
                           return;
                         }
 
@@ -259,7 +265,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             Fluttertoast.showToast(
                               msg: "Email already exists",
                               toastLength: Toast.LENGTH_LONG,
-                              gravity: ToastGravity.BOTTOM,
+                              gravity: ToastGravity.TOP,
                             );
                           }
                         });
