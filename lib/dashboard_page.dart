@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:xplora/profile_page.dart';
 import 'home_page_content.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -13,7 +14,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   final List<Widget> _pages = [
     HomePageContent(),
-    Placeholder(),
+    ProfilePage(),
   ];
 
   @override
