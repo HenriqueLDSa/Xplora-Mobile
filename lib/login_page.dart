@@ -74,106 +74,121 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Image.asset(
-                'assets/images/xplora.png',
-                width: 250,
-              ),
-            ]),
-            const SizedBox(height: 70),
-            Row(
+          child: SingleChildScrollView(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 250,
-                  child: CustomTextField(
-                    label: "Email",
-                    controller: emailController,
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Image.asset(
+                    'assets/images/xplora.png',
+                    width: 250,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 250,
-                  child: CustomTextField(
-                      label: "Password",
-                      controller: passwordController,
-                      obscureText: true),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 250,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final emailText = emailController.text.trim();
-                      final passwordText = passwordController.text.trim();
-
-                      doLogin(emailText, passwordText).then((loginSuccess) {
-                        if (loginSuccess && mounted) {
-                          navigateToDashboard();
-                        } else if (mounted) {
-                          Fluttertoast.showToast(
-                            msg: "Invalid login or password",
-                            toastLength: Toast.LENGTH_LONG,
-                            gravity: ToastGravity.BOTTOM,
-                          );
-                        }
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C4AB6),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Don't have an account? ",
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignUpPage()),
-                    );
+                ]),
+                const SizedBox(height: 70),
+                GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
                   },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 250,
+                            child: CustomTextField(
+                              label: "Email",
+                              controller: emailController,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 250,
+                            child: CustomTextField(
+                                label: "Password",
+                                controller: passwordController,
+                                obscureText: true),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  child: const Text(
-                    "Sign up",
-                    style: TextStyle(color: Color.fromRGBO(4, 49, 199, 1)),
-                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 250,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final emailText = emailController.text.trim();
+                          final passwordText = passwordController.text.trim();
+
+                          doLogin(emailText, passwordText).then((loginSuccess) {
+                            if (loginSuccess && mounted) {
+                              navigateToDashboard();
+                            } else if (mounted) {
+                              Fluttertoast.showToast(
+                                msg: "Invalid login or password",
+                                toastLength: Toast.LENGTH_LONG,
+                                gravity: ToastGravity.BOTTOM,
+                              );
+                            }
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6C4AB6),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Don't have an account? ",
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SignUpPage()),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: const Text(
+                        "Sign up",
+                        style: TextStyle(color: Color.fromRGBO(4, 49, 199, 1)),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ]),
+          ),
         ),
       ),
     );
