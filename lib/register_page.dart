@@ -26,11 +26,14 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String? userId, firstName, lastName, email;
 
-  final TextEditingController firstNameController = TextEditingController();
-  final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPassController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPassController = TextEditingController();
+
+  bool _isValid = false;
+  String _errorMessage = '';
 
   Future<bool> doRegister(String reqFirstName, String reqLastName,
       String reqEmail, String reqPassword) async {
@@ -51,7 +54,7 @@ class _SignUpPageState extends State<SignUpPage> {
     if (response.statusCode == 201) {
       Map<String, dynamic> jsonResponse = json.decode(response.body);
 
-      userId = ""; //Edit API to return the userId as well
+      userId = jsonResponse['user_id'];
       firstName = jsonResponse['first_name'];
       lastName = jsonResponse['last_name'];
       email = jsonResponse['email'];
@@ -77,6 +80,32 @@ class _SignUpPageState extends State<SignUpPage> {
         builder: (context) => DashboardPage(),
       ),
     );
+  }
+
+  bool _validatePassword(String password) {
+    _errorMessage = '';
+
+    if (password.length < 8) {
+      _errorMessage += '• Password must be longer than 8 characters\n';
+    }
+
+    if (!password.contains(RegExp(r'[A-Z]'))) {
+      _errorMessage += '• Uppercase letter is missing\n';
+    }
+
+    if (!password.contains(RegExp(r'[a-z]'))) {
+      _errorMessage += '• Lowercase letter is missing\n';
+    }
+
+    if (!password.contains(RegExp(r'[0-9]'))) {
+      _errorMessage += '• Digit is missing\n';
+    }
+
+    if (!password.contains(RegExp(r'[!@#%^&*(),.?":{}|<>]'))) {
+      _errorMessage += '• Special character is missing\n';
+    }
+
+    return _errorMessage.isEmpty;
   }
 
   @override
@@ -110,7 +139,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           width: 250,
                           child: CustomTextField(
                             label: "First Name",
-                            controller: firstNameController,
+                            controller: _firstNameController,
                           ),
                         ),
                       ],
@@ -123,7 +152,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           width: 250,
                           child: CustomTextField(
                             label: "Last Name",
-                            controller: lastNameController,
+                            controller: _lastNameController,
                           ),
                         ),
                       ],
@@ -136,7 +165,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           width: 250,
                           child: CustomTextField(
                             label: "Email",
-                            controller: emailController,
+                            controller: _emailController,
                           ),
                         ),
                       ],
@@ -149,7 +178,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           width: 250,
                           child: CustomTextField(
                             label: "Password",
-                            controller: passwordController,
+                            controller: _passwordController,
                             obscureText: true,
                           ),
                         ),
@@ -163,7 +192,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           width: 250,
                           child: CustomTextField(
                             label: "Confirm Password",
-                            controller: confirmPassController,
+                            controller: _confirmPassController,
                             obscureText: true,
                           ),
                         ),
@@ -180,10 +209,46 @@ class _SignUpPageState extends State<SignUpPage> {
                     width: 250,
                     child: ElevatedButton(
                       onPressed: () {
-                        final firstNameText = firstNameController.text.trim();
-                        final lastNameText = lastNameController.text.trim();
-                        final emailText = emailController.text.trim();
-                        final passwordText = passwordController.text.trim();
+                        final firstNameText = _firstNameController.text.trim();
+                        final lastNameText = _lastNameController.text.trim();
+                        final emailText = _emailController.text.trim();
+                        final passwordText = _passwordController.text.trim();
+                        final confirPasswordText =
+                            _confirmPassController.text.trim();
+
+                        if (firstNameText == "" ||
+                            lastNameText == "" ||
+                            emailText == "" ||
+                            passwordText == "" ||
+                            confirPasswordText == "") {
+                          Fluttertoast.showToast(
+                              msg: "All fields are required",
+                              toastLength: Toast.LENGTH_LONG,
+                              gravity: ToastGravity.BOTTOM);
+                          return;
+                        }
+
+                        if (passwordText != confirPasswordText) {
+                          Fluttertoast.showToast(
+                              msg: "Passwords don't match",
+                              toastLength: Toast.LENGTH_LONG,
+                              gravity: ToastGravity.BOTTOM);
+                          return;
+                        }
+
+                        setState(() {
+                          _isValid =
+                              _validatePassword(_passwordController.text);
+                        });
+
+                        if (!_isValid) {
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Password is not valid:\n${_errorMessage.substring(0, _errorMessage.length - 1)}",
+                              toastLength: Toast.LENGTH_LONG,
+                              gravity: ToastGravity.BOTTOM);
+                          return;
+                        }
 
                         doRegister(firstNameText, lastNameText, emailText,
                                 passwordText)

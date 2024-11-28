@@ -131,6 +131,14 @@ class _LoginPageState extends State<LoginPage> {
                           final emailText = emailController.text.trim();
                           final passwordText = passwordController.text.trim();
 
+                          if (emailText == "" || passwordText == "") {
+                            Fluttertoast.showToast(
+                                msg: "All fields are required",
+                                toastLength: Toast.LENGTH_LONG,
+                                gravity: ToastGravity.BOTTOM);
+                            return;
+                          }
+
                           doLogin(emailText, passwordText).then((loginSuccess) {
                             if (loginSuccess && mounted) {
                               navigateToDashboard();
