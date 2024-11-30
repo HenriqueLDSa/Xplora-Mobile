@@ -18,6 +18,8 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
   String tripName = 'Trip name';
   String tripDate = '00/00/0000 - 00/00/0000';
   String tripNotes = 'Notes here...';
+  bool isEditingNotes = false;
+  TextEditingController notesController = TextEditingController();
 
   // Simulate stored details for each category
   List<String> flights = [];
@@ -60,12 +62,18 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     String lowerWord = word.toLowerCase();
 
     if (lowerWord.endsWith('ies')) {
-      return lowerWord.substring(0, lowerWord.length - 3) + 'y';
+      return '${lowerWord.substring(0, lowerWord.length - 3)}y';
     } else if (lowerWord.endsWith('s')) {
       return lowerWord.substring(0, lowerWord.length - 1);
     }
 
     return lowerWord;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    notesController.text = tripNotes;
   }
 
   @override
@@ -120,13 +128,14 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.asset(
                         "assets/images/new_york.jpeg",
-                        width: 100,
-                        height: 120,
+                        width: 110,
+                        height: 110,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -138,7 +147,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                           Text(
                             tripName,
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -148,26 +157,93 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                             child: Text(
                               tripDate,
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 color: Colors.grey[600],
                               ),
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Padding(
-                            padding: EdgeInsets.only(right: 20),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 45,
-                              child: CustomTextField(
-                                label: "Notes here...",
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
                   ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isEditingNotes = true; // Switch to editing mode
+                    });
+                  },
+                  child: isEditingNotes
+                      ? Container(
+                          height: 100, // Set a fixed height for the container
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(
+                                255, 248, 220, 1.0), // Set background color
+                            border: Border.all(
+                              color: const Color(0xFF6C4AB6), // Purple border
+                              width: 2.0,
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(8.0), // Rounded corners
+                          ),
+                          child: SingleChildScrollView(
+                            // Make the TextField scrollable
+                            child: TextField(
+                              controller: notesController,
+                              maxLines: null, // Allow unlimited lines
+                              onSubmitted: (value) {
+                                setState(() {
+                                  tripNotes = value; // Update the tripNotes
+                                  isEditingNotes = false; // Exit editing mode
+                                });
+                              },
+                              decoration: InputDecoration(
+                                border:
+                                    InputBorder.none, // Remove default border
+                                contentPadding: EdgeInsets.all(
+                                    8.0), // Padding inside the text field
+                                hintText: "Notes here...", // Placeholder text
+                                hintStyle: TextStyle(
+                                    color: Colors
+                                        .grey), // Style for the placeholder text
+                              ),
+                              cursorColor:
+                                  const Color(0xFF6C4AB6), // Purple cursor
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.all(8.0),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(
+                                255, 248, 220, 1.0), // Set background color
+                            border: Border.all(
+                              color: const Color(
+                                  0xFF6C4AB6), // Purple border when not editing
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: SingleChildScrollView(
+                            // Make the text scrollable when not editing
+                            child: Text(
+                              tripNotes.isEmpty
+                                  ? "Notes here..."
+                                  : tripNotes, // Show placeholder when empty
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.black),
+                            ),
+                          ),
+                        ),
                 ),
               ),
 
@@ -197,24 +273,50 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     bool isVowel = _isFirstLetterVowel(categoryName);
     String categoryLower = _toSingular(categoryName);
 
-    return Card(
+    //theme to remove the lines that divide the categorySections when they're clicked
+    final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
+
+    IconData getIconForCategory(String categoryName) {
+      switch (categoryName.toLowerCase()) {
+        case 'flights':
+          return Icons.flight_takeoff;
+        case 'accommodations':
+          return Icons.hotel;
+        case 'activities':
+          return Icons.local_activity;
+        default:
+          return Icons.category;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: 12.0), // Match the image padding
+      child: Card(
         margin: const EdgeInsets.symmetric(vertical: 8),
-        child: ExpansionTile(
-            leading: Icon(
-              Icons.flight_takeoff,
-              color: const Color(0xFF6C4AB6),
-            ),
-            title: Text(
-              categoryName,
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-            children: [
-              if (details.isNotEmpty)
-                ...details
-                    .map((detail) => ListTile(title: Text(detail as String)))
-              else
-                Padding(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.85, // Adjust the width
+          child: Theme(
+            data: theme,
+            child: ExpansionTile(
+              leading: Icon(
+                getIconForCategory(categoryName),
+                color: const Color(0xFF6C4AB6),
+              ),
+              title: Text(
+                categoryName,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              children: [
+                // Details
+                if (details.isNotEmpty)
+                  ...details
+                      .map((detail) => ListTile(title: Text(detail as String)))
+                else
+                  Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: RichText(
                       text: TextSpan(
@@ -232,11 +334,40 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                           ),
                           TextSpan(
                             text:
-                                " button to add ${isVowel ? 'an ' : 'a '} ${categoryLower}",
-                          ) // Regular text again
+                                " button to add ${isVowel ? 'an ' : 'a '} $categoryLower",
+                          ), // Regular text again
                         ],
                       ),
-                    )),
-            ]));
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CustomTextField extends StatelessWidget {
+  final String label;
+
+  const CustomTextField({super.key, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      maxLines: null, // Allow the text field to expand vertically
+      textAlignVertical: TextAlignVertical.top, // Align text to the top
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Colors.grey), // Customize border color
+        ),
+        contentPadding:
+            EdgeInsets.all(8.0), // Add padding inside the text field
+      ),
+    );
   }
 }
