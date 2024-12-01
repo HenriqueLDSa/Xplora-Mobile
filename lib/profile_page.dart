@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xplora/welcome.dart';
@@ -10,6 +13,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  String _errorMessage = "";
   bool isEditing = false;
 
   final TextEditingController _newFirstNameController =
@@ -84,6 +88,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     width: 150,
                     child: OutlinedButton(
                       onPressed: () {
+                        if (isEditing) {
+                          _updateUserInfo();
+                        }
+
                         setState(() {
                           isEditing = !isEditing;
                         });
@@ -257,5 +265,140 @@ class _ProfilePageState extends State<ProfilePage> {
       MaterialPageRoute(builder: (context) => WelcomePage()),
       (route) => false,
     );
+  }
+
+  Future<void> _updateUserInfo() async {
+    bool passwordsMatch = _doesPasswordsMatch(
+        _newPasswordController.text, _confirmNewPasswordController.text);
+    if (!passwordsMatch) {
+      Fluttertoast.showToast(
+        msg: "Passwords must match",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    bool isNewPasswordValid = _validatePassword(_newPasswordController.text);
+    if (!isNewPasswordValid) {
+      Fluttertoast.showToast(
+        msg: _errorMessage,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    bool isPasswordCorrect =
+        await _isCorrectPassword(_currentPasswordController.text);
+    if (!isPasswordCorrect) {
+      return;
+    }
+
+    String url = "https://xplora.fun/api/users/$userIdText";
+    final response = await http.put(
+      Uri.parse(url),
+      body: jsonEncode({
+        'first_name': _newFirstNameController.text,
+        'last_name': _newLastNameController.text,
+        'email': _newEmailController.text,
+        'password': _newPasswordController.text,
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    var jsonResponse = json.decode(response.body);
+
+    if (response.statusCode == 200) {
+      if (_newFirstNameController.text != "" &&
+          _newLastNameController.text != "" &&
+          _newEmailController.text != "") {
+        final prefs = await SharedPreferences.getInstance();
+
+        prefs.setString('firstName', _newFirstNameController.text);
+        prefs.setString('lastName', _newLastNameController.text);
+        prefs.setString('email', _newEmailController.text);
+
+        setState(() {
+          firstNameText = _newFirstNameController.text;
+          lastNameText = _newLastNameController.text;
+          emailText = _newEmailController.text;
+        });
+      }
+
+      Fluttertoast.showToast(
+        msg: jsonResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+      );
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+      msg: jsonResponse['error'],
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.TOP,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+  }
+
+  Future<bool> _isCorrectPassword(String password) async {
+    String url = "https://xplora.fun/api/users/$userIdText/password";
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    var jsonResponse = json.decode(response.body);
+
+    Fluttertoast.showToast(
+        msg: jsonResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+
+    return false;
+  }
+
+  bool _validatePassword(String password) {
+    _errorMessage = '';
+
+    if (password.length < 8) {
+      _errorMessage += '• Password must be longer than 8 characters\n';
+    }
+
+    if (!password.contains(RegExp(r'[A-Z]'))) {
+      _errorMessage += '• Uppercase letter is missing\n';
+    }
+
+    if (!password.contains(RegExp(r'[a-z]'))) {
+      _errorMessage += '• Lowercase letter is missing\n';
+    }
+
+    if (!password.contains(RegExp(r'[0-9]'))) {
+      _errorMessage += '• Digit is missing\n';
+    }
+
+    if (!password.contains(RegExp(r'[!@#%^&*(),.?":{}|<>]'))) {
+      _errorMessage += '• Special character is missing\n';
+    }
+
+    return _errorMessage.isEmpty;
+  }
+
+  bool _doesPasswordsMatch(String newPassword, String confirmPassword) {
+    return newPassword == confirmPassword;
   }
 }
