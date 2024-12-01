@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:logger/logger.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xplora/trip_details_page.dart';
 import 'trip.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
@@ -133,6 +134,27 @@ class _HomePageContentState extends State<HomePageContent> {
       }
     } catch (e) {
       logger.e('Error occurred: $e');
+    }
+  }
+
+  Future<void> navigateToTripDetails(BuildContext context, Trip trip) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TripDetailsPage(
+          tripId: trip.id,
+          tripName: trip.name,
+          tripCity: trip.city,
+          tripStartDate: trip.startDate,
+          tripEndDate: trip.endDate,
+          tripNotes: trip.notes,
+          tripPicUrl: trip.pictureUrl!,
+        ),
+      ),
+    );
+
+    if (result == 'delete' || result == 'back') {
+      _refresh();
     }
   }
 
@@ -489,17 +511,11 @@ class _HomePageContentState extends State<HomePageContent> {
                               return Padding(
                                 padding: EdgeInsets.symmetric(vertical: 4.0),
                                 child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Placeholder(),
-                                      ),
-                                    );
-                                  },
+                                  onTap: () =>
+                                      navigateToTripDetails(context, trip),
                                   child: Container(
                                     width: double.infinity,
-                                    height: 100,
+                                    height: 110,
                                     decoration: BoxDecoration(
                                         color: Color(0xFFEAEAEA),
                                         borderRadius:
@@ -527,7 +543,7 @@ class _HomePageContentState extends State<HomePageContent> {
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: TextStyle(
-                                                    fontSize: 20,
+                                                    fontSize: 24,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -542,12 +558,12 @@ class _HomePageContentState extends State<HomePageContent> {
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                       style: TextStyle(
-                                                          fontSize: 14),
+                                                          fontSize: 16),
                                                     ),
                                                     Text(
                                                       '${trip.startDate} - ${trip.endDate}',
                                                       style: TextStyle(
-                                                          fontSize: 14),
+                                                          fontSize: 16),
                                                     ),
                                                   ],
                                                 ),
@@ -558,14 +574,12 @@ class _HomePageContentState extends State<HomePageContent> {
                                         SizedBox(width: 4),
                                         SizedBox(
                                           width: 110,
-                                          height: 100,
+                                          height: 110,
                                           child: ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(10),
                                             child: Image.network(
-                                              (trip.pictureUrl != null)
-                                                  ? 'https://xplora.fun${trip.pictureUrl}'
-                                                  : 'https://xplora.fun/uploads/trips/trip_default.png',
+                                              'https://xplora.fun${trip.pictureUrl}',
                                               fit: BoxFit.cover,
                                               alignment: Alignment.center,
                                               loadingBuilder:
