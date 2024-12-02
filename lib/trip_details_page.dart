@@ -6,10 +6,17 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:mime/mime.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xplora/objects/accommodation.dart';
+import 'package:xplora/objects/activity.dart';
+import 'package:xplora/services/accommodation_service.dart';
+import 'package:xplora/services/activity_service.dart';
+import 'package:xplora/services/flight_service.dart';
 import 'dart:convert';
 
+import 'package:xplora/objects/flight.dart';
+
 class TripDetailsPage extends StatefulWidget {
+  final String userId;
   final String tripId;
   final String tripName;
   final String tripCity;
@@ -20,6 +27,7 @@ class TripDetailsPage extends StatefulWidget {
 
   const TripDetailsPage({
     super.key,
+    required this.userId,
     required this.tripId,
     required this.tripName,
     required this.tripCity,
@@ -35,6 +43,7 @@ class TripDetailsPage extends StatefulWidget {
 }
 
 class _TripDetailsPageState extends State<TripDetailsPage> {
+  late String userId;
   late String tripId;
   late String tripName;
   late String tripDate;
@@ -64,9 +73,14 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
       TextEditingController(text: 'No photo selected');
   File? _photoFile;
 
+  late Future<List<Flight>> futureFlights;
+  late Future<List<Accommodation>> futureAccommodations;
+  late Future<List<Activity>> futureActivities;
+
   @override
   void initState() {
     super.initState();
+    userId = widget.userId;
     tripId = widget.tripId;
     tripName = widget.tripName;
     tripCity = widget.tripCity;
@@ -76,6 +90,15 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     tripNotes = widget.tripNotes;
     tripPicUrl = widget.tripPicUrl;
     photoUrl = "https://xplora.fun$tripPicUrl";
+
+    futureFlights =
+        FlightService("https://xplora.fun").fetchFlights(userId, tripId);
+
+    futureAccommodations = AccommodationService("https://xplora.fun")
+        .fetchAccommodations(userId, tripId);
+
+    futureActivities =
+        ActivityService("https://xplora.fun").fetchActivities(userId, tripId);
   }
 
   void _navigateBack(BuildContext context) {
@@ -91,8 +114,6 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
   }
 
   Future<void> _deleteTrip() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString('userId');
     final Uri uri =
         Uri.parse("https://xplora.fun/api/users/$userId/trips/$tripId");
 
@@ -131,9 +152,6 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
       String? reqEndDate,
       String? reqNotes,
       File? photo) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString('userId');
-
     final Uri uri =
         Uri.parse('https://xplora.fun/api/users/$userId/trips/$tripId');
 
@@ -569,9 +587,51 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                 Expanded(
                   child: ListView(
                     children: [
-                      _buildCategorySection('Flights', []),
-                      _buildCategorySection('Accommodations', []),
-                      _buildCategorySection('Activities', []),
+                      _buildCategorySection<Flight>(
+                        'Flights',
+                        futureFlights,
+                        (context, flight) {
+                          return ListTile(
+                            title: Text('Flight: ${flight.flightNum}'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    'Departure: ${flight.departureAirport} at ${flight.departureTime}'),
+                                Text(
+                                    'Arrival: ${flight.arrivalAirport} at ${flight.arrivalTime}'),
+                                Text(
+                                    'Confirmation Number: ${flight.confirmationNum}'),
+                              ],
+                            ),
+                          );
+                        },
+                        (categoryName) => Icons.flight_takeoff,
+                      ),
+                      _buildCategorySection<Accommodation>(
+                        'Accommodations',
+                        futureAccommodations,
+                        (context, accommodation) {
+                          return ListTile(
+                            title: Text('Hotel: ${accommodation.name}'),
+                            subtitle:
+                                Text('Location: ${accommodation.address}'),
+                          );
+                        },
+                        (categoryName) => Icons.hotel,
+                      ),
+                      _buildCategorySection<Activity>(
+                        'Activities',
+                        futureActivities,
+                        (context, activity) {
+                          return ListTile(
+                            title: Text('Activity: ${activity.name}'),
+                            subtitle: Text('Details: ${activity.location}'),
+                          );
+                        },
+                        (categoryName) =>
+                            Icons.local_activity, // Icon for Activities
+                      ),
                     ],
                   ),
                 ),
@@ -583,21 +643,13 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     );
   }
 
-  Widget _buildCategorySection(String categoryName, List<Widget> details) {
+  Widget _buildCategorySection<T>(
+    String categoryName,
+    Future<List<T>> itemsFuture,
+    Widget Function(BuildContext, T) itemBuilder,
+    IconData Function(String) getCategoryIcon,
+  ) {
     final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
-
-    IconData getIconForCategory(String categoryName) {
-      switch (categoryName.toLowerCase()) {
-        case 'flights':
-          return Icons.flight_takeoff;
-        case 'accommodations':
-          return Icons.hotel;
-        case 'activities':
-          return Icons.local_activity;
-        default:
-          return Icons.category;
-      }
-    }
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -607,7 +659,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
           data: theme,
           child: ExpansionTile(
             leading: Icon(
-              getIconForCategory(categoryName),
+              getCategoryIcon(categoryName),
               color: const Color(0xFF6A0DAD),
             ),
             title: Text(
@@ -633,28 +685,44 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
               ],
             ),
             children: [
-              if (details.isNotEmpty)
-                ...details.map((detail) => ListTile(title: detail))
-              else
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: RichText(
-                    text: TextSpan(
-                      style: const TextStyle(fontSize: 14, color: Colors.black),
-                      children: [
-                        TextSpan(text: 'No $categoryName yet! Click '),
-                        TextSpan(
-                          text: "+",
+              FutureBuilder<List<T>>(
+                future: itemsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(
+                        child:
+                            Text(snapshot.error.toString().split(': ').last));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: RichText(
+                        text: TextSpan(
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.black),
+                              fontSize: 14, color: Colors.black),
+                          children: [
+                            TextSpan(text: 'No $categoryName yet! Click '),
+                            TextSpan(
+                              text: "+",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                            const TextSpan(text: " button to add"),
+                          ],
                         ),
-                        const TextSpan(
-                          text: " button to add",
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                      ),
+                    );
+                  } else {
+                    return Column(
+                      children: snapshot.data!.map((item) {
+                        return itemBuilder(context, item);
+                      }).toList(),
+                    );
+                  }
+                },
+              ),
             ],
           ),
         ),

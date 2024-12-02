@@ -7,7 +7,7 @@ import 'package:logger/logger.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xplora/trip_details_page.dart';
-import 'trip.dart';
+import 'objects/trip.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 
@@ -41,10 +41,20 @@ class _HomePageContentState extends State<HomePageContent> {
 
   Future<List<Trip>>? _futureItems;
 
+  late String userId;
+
   @override
   void initState() {
     super.initState();
     _loadTrips();
+    _getUserID();
+  }
+
+  Future<void> _getUserID() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getString('userId')!;
+    });
   }
 
   Future<List<Trip>> fetchTrips(String userId) async {
@@ -142,6 +152,7 @@ class _HomePageContentState extends State<HomePageContent> {
       context,
       MaterialPageRoute(
         builder: (context) => TripDetailsPage(
+          userId: userId,
           tripId: trip.id,
           tripName: trip.name,
           tripCity: trip.city,
