@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xplora/welcome.dart';
 
@@ -13,6 +14,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  var logger = Logger(
+    printer: PrettyPrinter(),
+  );
+
+  var loggerNoStack = Logger(
+    printer: PrettyPrinter(methodCount: 0),
+  );
+
   String _errorMessage = "";
   bool isEditing = false;
 
@@ -121,7 +130,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             Expanded(
               child: Center(
-                child: isEditing ? _buildEditingFields() : _buildProfileInfo(),
+                child: SingleChildScrollView(
+                  child:
+                      isEditing ? _buildEditingFields() : _buildProfileInfo(),
+                ),
               ),
             ),
             Padding(
@@ -269,65 +281,81 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _updateUserInfo() async {
-    bool passwordsMatch = _doesPasswordsMatch(
-        _newPasswordController.text, _confirmNewPasswordController.text);
-    if (!passwordsMatch) {
-      Fluttertoast.showToast(
-        msg: "Passwords must match",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.TOP,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
-      return;
+    // Validate passwords
+    if (_newPasswordController.text.isNotEmpty &&
+        _confirmNewPasswordController.text.isNotEmpty) {
+      if (!_doesPasswordsMatch(
+          _newPasswordController.text, _confirmNewPasswordController.text)) {
+        _showToast("Passwords must match", Colors.red);
+        return;
+      }
+
+      if (!_validatePassword(_newPasswordController.text)) {
+        _showToast(_errorMessage, Colors.red);
+        return;
+      }
     }
 
-    bool isNewPasswordValid = _validatePassword(_newPasswordController.text);
-    if (!isNewPasswordValid) {
-      Fluttertoast.showToast(
-        msg: _errorMessage,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.TOP,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
-      return;
+    // Check current password
+    if (_currentPasswordController.text.isNotEmpty) {
+      bool isPasswordCorrect =
+          await _isCorrectPassword(_currentPasswordController.text);
+      if (!isPasswordCorrect) return;
     }
 
-    bool isPasswordCorrect =
-        await _isCorrectPassword(_currentPasswordController.text);
-    if (!isPasswordCorrect) {
-      return;
-    }
+    // Prepare body data
+    final Map<String, dynamic> bodyData = {
+      if (_newFirstNameController.text.isNotEmpty)
+        'first_name': _newFirstNameController.text,
+      if (_newLastNameController.text.isNotEmpty)
+        'last_name': _newLastNameController.text,
+      if (_newEmailController.text.isNotEmpty)
+        'email': _newEmailController.text,
+      if (_newPasswordController.text.isNotEmpty)
+        'password': _newPasswordController.text,
+    };
+
+    logger.d(bodyData);
 
     String url = "https://xplora.fun/api/users/$userIdText";
+    logger.d(url);
+
+    // Make the API request
     final response = await http.put(
       Uri.parse(url),
-      body: jsonEncode({
-        'first_name': _newFirstNameController.text,
-        'last_name': _newLastNameController.text,
-        'email': _newEmailController.text,
-        'password': _newPasswordController.text,
-      }),
+      body: jsonEncode(bodyData),
       headers: {'Content-Type': 'application/json'},
     );
 
     var jsonResponse = json.decode(response.body);
 
     if (response.statusCode == 200) {
-      if (_newFirstNameController.text != "" &&
-          _newLastNameController.text != "" &&
-          _newEmailController.text != "") {
+      // Update local data and preferences if needed
+      if (_newFirstNameController.text.isNotEmpty ||
+          _newLastNameController.text.isNotEmpty ||
+          _newEmailController.text.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
 
-        prefs.setString('firstName', _newFirstNameController.text);
-        prefs.setString('lastName', _newLastNameController.text);
-        prefs.setString('email', _newEmailController.text);
+        if (_newFirstNameController.text.isNotEmpty) {
+          prefs.setString('firstName', _newFirstNameController.text);
+        }
+        if (_newLastNameController.text.isNotEmpty) {
+          prefs.setString('lastName', _newLastNameController.text);
+        }
+        if (_newEmailController.text.isNotEmpty) {
+          prefs.setString('email', _newEmailController.text);
+        }
 
         setState(() {
-          firstNameText = _newFirstNameController.text;
-          lastNameText = _newLastNameController.text;
-          emailText = _newEmailController.text;
+          if (_newFirstNameController.text.isNotEmpty) {
+            firstNameText = _newFirstNameController.text;
+          }
+          if (_newLastNameController.text.isNotEmpty) {
+            lastNameText = _newLastNameController.text;
+          }
+          if (_newEmailController.text.isNotEmpty) {
+            emailText = _newEmailController.text;
+          }
         });
       }
 
@@ -340,11 +368,17 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
+    logger.e(jsonResponse['error']);
+    _showToast(jsonResponse['error'], Colors.red);
+  }
+
+// Helper function to show toast messages
+  void _showToast(String message, Color backgroundColor) {
     Fluttertoast.showToast(
-      msg: jsonResponse['error'],
+      msg: message,
       toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.TOP,
-      backgroundColor: Colors.red,
+      backgroundColor: backgroundColor,
       textColor: Colors.white,
     );
   }
@@ -401,5 +435,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool _doesPasswordsMatch(String newPassword, String confirmPassword) {
     return newPassword == confirmPassword;
+  }
+
+  bool controllersAreEmpty() {
+    return _newFirstNameController.text.isEmpty &&
+        _newLastNameController.text.isEmpty &&
+        _newEmailController.text.isEmpty &&
+        _currentPasswordController.text.isEmpty &&
+        _newPasswordController.text.isEmpty &&
+        _confirmNewPasswordController.text.isEmpty;
   }
 }
