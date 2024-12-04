@@ -281,7 +281,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _updateUserInfo() async {
-    // Validate passwords
     if (_newPasswordController.text.isNotEmpty &&
         _confirmNewPasswordController.text.isNotEmpty) {
       if (!_doesPasswordsMatch(
@@ -296,14 +295,12 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
 
-    // Check current password
     if (_currentPasswordController.text.isNotEmpty) {
       bool isPasswordCorrect =
           await _isCorrectPassword(_currentPasswordController.text);
       if (!isPasswordCorrect) return;
     }
 
-    // Prepare body data
     final Map<String, dynamic> bodyData = {
       if (_newFirstNameController.text.isNotEmpty)
         'first_name': _newFirstNameController.text,
@@ -315,12 +312,8 @@ class _ProfilePageState extends State<ProfilePage> {
         'password': _newPasswordController.text,
     };
 
-    logger.d(bodyData);
-
     String url = "https://xplora.fun/api/users/$userIdText";
-    logger.d(url);
 
-    // Make the API request
     final response = await http.put(
       Uri.parse(url),
       body: jsonEncode(bodyData),
@@ -330,7 +323,6 @@ class _ProfilePageState extends State<ProfilePage> {
     var jsonResponse = json.decode(response.body);
 
     if (response.statusCode == 200) {
-      // Update local data and preferences if needed
       if (_newFirstNameController.text.isNotEmpty ||
           _newLastNameController.text.isNotEmpty ||
           _newEmailController.text.isNotEmpty) {
