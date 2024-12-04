@@ -814,6 +814,27 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
         textColor: Colors.white);
   }
 
+  void _deleteFlight(Flight flight, String userId, String tripId) async {
+    final flightDeleteResponse = await FlightService("https://xplora.fun")
+        .deleteFlight(flight.id, userId, tripId);
+
+    if (flightDeleteResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: flightDeleteResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: flightDeleteResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
   void _showAccommodationDialog([Accommodation? accommodation]) {
     showDialog(
       context: context,
@@ -1129,6 +1150,29 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
         textColor: Colors.white);
   }
 
+  void _deleteAccommodation(
+      Accommodation accommodation, String userId, String tripId) async {
+    final activityDeleteResponse =
+        await AccommodationService("https://xplora.fun")
+            .deleteAccommodation(accommodation.id, userId, tripId);
+
+    if (activityDeleteResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: activityDeleteResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: activityDeleteResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
   void _showActivityDialog([Activity? activity]) {
     showDialog(
       context: context,
@@ -1340,6 +1384,27 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
         textColor: Colors.white);
   }
 
+  void _deleteActivity(Activity activity, String userId, String tripId) async {
+    final activityDeleteResponse = await ActivityService("https://xplora.fun")
+        .deleteActivity(activity.id, userId, tripId);
+
+    if (activityDeleteResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: activityDeleteResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: activityDeleteResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1503,6 +1568,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                         },
                         (categoryName) => Icons.flight_takeoff,
                         _showFlightDialog,
+                        _deleteFlight,
                       ),
                       _buildCategorySection<Accommodation>(
                         'Accommodations',
@@ -1516,6 +1582,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                         },
                         (categoryName) => Icons.hotel,
                         _showAccommodationDialog,
+                        _deleteAccommodation,
                       ),
                       _buildCategorySection<Activity>(
                         'Activities',
@@ -1528,6 +1595,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                         },
                         (categoryName) => Icons.local_activity,
                         _showActivityDialog,
+                        _deleteActivity,
                       ),
                     ],
                   ),
@@ -1546,6 +1614,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     Widget Function(BuildContext, T) itemBuilder,
     IconData Function(String) getCategoryIcon,
     void Function([T? item]) showDialogWidget,
+    void Function(T item, String userId, String tripId) onDeleteItem,
   ) {
     final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
 
@@ -1613,12 +1682,27 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                   } else {
                     return Column(
                       children: snapshot.data!.map((item) {
-                        return GestureDetector(
-                          onTap: () {
-                            isEditing = true;
-                            showDialogWidget(item);
+                        return Dismissible(
+                          key: ValueKey(item),
+                          direction: DismissDirection
+                              .endToStart, // Swipe left to delete
+                          background: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white),
+                          ),
+                          onDismissed: (direction) {
+                            onDeleteItem(item, userId, tripId);
                           },
-                          child: itemBuilder(context, item),
+                          child: GestureDetector(
+                            onTap: () {
+                              isEditing = true;
+                              showDialogWidget(item);
+                            },
+                            child: itemBuilder(context, item),
+                          ),
                         );
                       }).toList(),
                     );

@@ -126,4 +126,28 @@ class AccommodationService {
       'message': jsonResponseData['error']
     };
   }
+
+  Future<Map<String, dynamic>> deleteAccommodation(
+      String accommodationId, String userId, String tripId) async {
+    final Uri uri = Uri.parse(
+        '$baseUrl/api/users/$userId/trips/$tripId/accommodations/$accommodationId');
+
+    final response = await http.delete(uri);
+
+    final jsonResponseData = json.decode(response.body);
+
+    if (response.statusCode == 201) {
+      logger.d(jsonResponseData['message']);
+      return {
+        'status_code': response.statusCode,
+        'message': jsonResponseData['message']
+      };
+    }
+
+    logger.e(jsonResponseData['error']);
+    return {
+      'status_code': response.statusCode,
+      'message': jsonResponseData['error']
+    };
+  }
 }
