@@ -74,8 +74,46 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
   File? _photoFile;
 
   late Future<List<Flight>> futureFlights;
+  final TextEditingController _flightConfirmationNumController =
+      TextEditingController();
+  final TextEditingController _flightNumController = TextEditingController();
+  final TextEditingController _departureAirportController =
+      TextEditingController();
+  final TextEditingController _arrivalAirportController =
+      TextEditingController();
+  final TextEditingController _departureTimeController =
+      TextEditingController();
+  final TextEditingController _arrivalTimeController = TextEditingController();
+  final TextEditingController _departureDateController =
+      TextEditingController();
+  final TextEditingController _arrivalDateController = TextEditingController();
+
   late Future<List<Accommodation>> futureAccommodations;
+  final TextEditingController _accommodationNameController =
+      TextEditingController();
+  final TextEditingController _accommodationConfirmationNumController =
+      TextEditingController();
+  final TextEditingController _accommodationAddressController =
+      TextEditingController();
+  final TextEditingController _accommodationCheckInDateController =
+      TextEditingController();
+  final TextEditingController _accommodationCheckOutDateController =
+      TextEditingController();
+  final TextEditingController _accommodationCheckInTimeController =
+      TextEditingController();
+  final TextEditingController _accommodationCheckOutTimeController =
+      TextEditingController();
+
   late Future<List<Activity>> futureActivities;
+  final TextEditingController _activityNameController = TextEditingController();
+  final TextEditingController _activityDateController = TextEditingController();
+  final TextEditingController _activityTimeController = TextEditingController();
+  final TextEditingController _activityLocationController =
+      TextEditingController();
+  final TextEditingController _activityNotesController =
+      TextEditingController();
+
+  bool isEditing = false;
 
   @override
   void initState() {
@@ -128,6 +166,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
       Fluttertoast.showToast(
         msg: jsonResponse['message'],
         toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
       );
 
       if (mounted) {
@@ -142,7 +181,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     _tripStartDateController.text = tripStartDate;
     _tripEndDateController.text = tripEndDate;
     _tripNotesController.text = tripNotes;
-    _showEditDialog();
+    _showEditTripDialog();
   }
 
   Future<void> _editTripRequest(
@@ -189,7 +228,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
 
       logger.d(response.statusCode);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         final responseBody = await response.stream.bytesToString();
         final responseData = jsonDecode(responseBody);
         logger.d('Trip updated successfully');
@@ -261,7 +300,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     });
   }
 
-  void _showEditDialog() {
+  void _showEditTripDialog() {
     showDialog(
       context: context,
       builder: (context) {
@@ -445,6 +484,862 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     );
   }
 
+  void _showFlightDialog([Flight? flight]) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        if (isEditing && flight != null) {
+          _flightConfirmationNumController.text = flight.confirmationNum;
+          _flightNumController.text = flight.flightNum;
+          _departureAirportController.text = flight.departureAirport;
+          _arrivalAirportController.text = flight.arrivalAirport;
+          _departureTimeController.text = flight.departureTime;
+          _arrivalTimeController.text = flight.arrivalTime;
+          _departureDateController.text = flight.departureDate;
+          _arrivalDateController.text = flight.arrivalDate;
+        }
+
+        return AlertDialog(
+          title: Text(isEditing ? 'Edit Flight Details' : 'Add Flight Details'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _flightConfirmationNumController,
+                      decoration: InputDecoration(
+                        labelText: 'Confirmation Number',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _flightNumController,
+                      decoration: InputDecoration(
+                        labelText: 'Flight Number',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _departureAirportController,
+                      decoration: InputDecoration(
+                        labelText: 'Departure Airport',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _arrivalAirportController,
+                      decoration: InputDecoration(
+                        labelText: 'Arrival Airport',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _departureTimeController,
+                      decoration: InputDecoration(
+                        labelText: 'Departure Time',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ).then((pickedTime) {
+                          if (pickedTime != null) {
+                            String formattedTime =
+                                "${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                            _departureTimeController.text = formattedTime;
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _arrivalTimeController,
+                      decoration: InputDecoration(
+                        labelText: 'Arrival Time',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ).then((pickedTime) {
+                          if (pickedTime != null) {
+                            String formattedTime =
+                                "${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                            _arrivalTimeController.text = formattedTime;
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _departureDateController,
+                      decoration: InputDecoration(
+                        labelText: 'Departure Date',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        ).then((pickedDate) {
+                          if (pickedDate != null) {
+                            _departureDateController.text =
+                                "${pickedDate.toLocal()}".split(' ')[0];
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _arrivalDateController,
+                      decoration: InputDecoration(
+                        labelText: 'Arrival Date',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        ).then((pickedDate) {
+                          if (pickedDate != null) {
+                            _arrivalDateController.text =
+                                "${pickedDate.toLocal()}".split(' ')[0];
+                          }
+                        })
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+
+                _flightConfirmationNumController.clear();
+                _flightNumController.clear();
+                _departureAirportController.clear();
+                _arrivalAirportController.clear();
+                _departureTimeController.clear();
+                _arrivalTimeController.clear();
+                _departureDateController.clear();
+                _arrivalDateController.clear();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_flightConfirmationNumController.text.isEmpty ||
+                    _flightNumController.text.isEmpty ||
+                    _departureAirportController.text.isEmpty ||
+                    _arrivalAirportController.text.isEmpty ||
+                    _departureTimeController.text.isEmpty ||
+                    _arrivalTimeController.text.isEmpty ||
+                    _departureDateController.text.isEmpty ||
+                    _arrivalDateController.text.isEmpty) {
+                  Fluttertoast.showToast(
+                      msg: "All fields are required",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.TOP,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
+                  return;
+                }
+
+                DateTime startDate = DateTime.parse(
+                    "${_departureDateController.text} ${_departureTimeController.text}");
+                DateTime endDate = DateTime.parse(
+                    "${_arrivalDateController.text} ${_arrivalTimeController.text}");
+
+                if (startDate.isAfter(endDate)) {
+                  Fluttertoast.showToast(
+                      msg: "Please choose a valid date/time range",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.TOP,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
+                  return;
+                }
+
+                if (isEditing) {
+                  _editFlight(
+                    flight!.id,
+                    userId,
+                    tripId,
+                    _flightConfirmationNumController.text,
+                    _flightNumController.text,
+                    _departureAirportController.text,
+                    _arrivalAirportController.text,
+                    _departureTimeController.text,
+                    _arrivalTimeController.text,
+                    _departureDateController.text,
+                    _arrivalDateController.text,
+                  );
+                } else {
+                  _addFlight(
+                    userId,
+                    tripId,
+                    _flightConfirmationNumController.text,
+                    _flightNumController.text,
+                    _departureAirportController.text,
+                    _arrivalAirportController.text,
+                    _departureTimeController.text,
+                    _arrivalTimeController.text,
+                    _departureDateController.text,
+                    _arrivalDateController.text,
+                  );
+                }
+
+                Navigator.pop(context);
+
+                _flightConfirmationNumController.clear();
+                _flightNumController.clear();
+                _departureAirportController.clear();
+                _arrivalAirportController.clear();
+                _departureTimeController.clear();
+                _arrivalTimeController.clear();
+                _departureDateController.clear();
+                _arrivalDateController.clear();
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addFlight(
+    String userId,
+    String tripId,
+    String confirmationNum,
+    String flightNum,
+    String departureAirport,
+    String arrivalAirport,
+    String departureTime,
+    String arrivalTime,
+    String departureDate,
+    String arrivalDate,
+  ) async {
+    final flightAddResponse = await FlightService('https://xplora.fun')
+        .addFlight(
+            userId,
+            tripId,
+            confirmationNum,
+            flightNum,
+            departureAirport,
+            arrivalAirport,
+            departureTime,
+            arrivalTime,
+            departureDate,
+            arrivalDate);
+
+    if (flightAddResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: flightAddResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: flightAddResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
+  void _editFlight(
+    String flightId,
+    String userId,
+    String tripId,
+    String confirmationNum,
+    String flightNum,
+    String departureAirport,
+    String arrivalAirport,
+    String departureTime,
+    String arrivalTime,
+    String departureDate,
+    String arrivalDate,
+  ) async {
+    final flightEditResponse = await FlightService('https://xplora.fun')
+        .editFlight(
+            flightId,
+            userId,
+            tripId,
+            confirmationNum,
+            flightNum,
+            departureAirport,
+            arrivalAirport,
+            departureTime,
+            arrivalTime,
+            departureDate,
+            arrivalDate);
+
+    if (flightEditResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: flightEditResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: flightEditResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
+  void _showAccommodationDialog([Accommodation? accommodation]) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        if (isEditing && accommodation != null) {
+          _accommodationNameController.text = accommodation.name;
+          _accommodationConfirmationNumController.text =
+              accommodation.confirmationNum;
+          _accommodationAddressController.text = accommodation.address;
+          _accommodationCheckInDateController.text = accommodation.checkInDate;
+          _accommodationCheckOutDateController.text =
+              accommodation.checkOutDate;
+          _accommodationCheckInTimeController.text = accommodation.checkInTime;
+          _accommodationCheckOutTimeController.text =
+              accommodation.checkOutTime;
+        }
+
+        return AlertDialog(
+          title: Text(isEditing
+              ? 'Edit Accommodation Details'
+              : 'Add Accommodation Details'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _accommodationNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _accommodationConfirmationNumController,
+                      decoration: InputDecoration(
+                        labelText: 'Confirmation Number',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _accommodationAddressController,
+                      decoration: InputDecoration(
+                        labelText: 'Address',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _accommodationCheckInDateController,
+                      decoration: InputDecoration(
+                        labelText: 'Check-in Date',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        ).then((pickedDate) {
+                          if (pickedDate != null) {
+                            _accommodationCheckInDateController.text =
+                                "${pickedDate.toLocal()}".split(' ')[0];
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _accommodationCheckOutDateController,
+                      decoration: InputDecoration(
+                        labelText: 'Check-out Date',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        ).then((pickedDate) {
+                          if (pickedDate != null) {
+                            _accommodationCheckOutDateController.text =
+                                "${pickedDate.toLocal()}".split(' ')[0];
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _accommodationCheckInTimeController,
+                      decoration: InputDecoration(
+                        labelText: 'Check-in Time',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ).then((pickedTime) {
+                          if (pickedTime != null) {
+                            String formattedTime =
+                                "${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                            _accommodationCheckInTimeController.text =
+                                formattedTime;
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _accommodationCheckOutTimeController,
+                      decoration: InputDecoration(
+                        labelText: 'Check-out Time',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ).then((pickedTime) {
+                          if (pickedTime != null) {
+                            String formattedTime =
+                                "${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                            _accommodationCheckOutTimeController.text =
+                                formattedTime;
+                          }
+                        })
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+
+                _accommodationNameController.clear();
+                _accommodationConfirmationNumController.clear();
+                _accommodationAddressController.clear();
+                _accommodationCheckInDateController.clear();
+                _accommodationCheckOutDateController.clear();
+                _accommodationCheckInTimeController.clear();
+                _accommodationCheckOutTimeController.clear();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_accommodationNameController.text.isEmpty ||
+                    _accommodationConfirmationNumController.text.isEmpty ||
+                    _accommodationAddressController.text.isEmpty ||
+                    _accommodationCheckInDateController.text.isEmpty ||
+                    _accommodationCheckOutDateController.text.isEmpty ||
+                    _accommodationCheckInTimeController.text.isEmpty ||
+                    _accommodationCheckOutTimeController.text.isEmpty) {
+                  Fluttertoast.showToast(
+                      msg: "All fields are required",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.TOP,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
+                  return;
+                }
+
+                DateTime startDate = DateTime.parse(
+                    "${_accommodationCheckInDateController.text} ${_accommodationCheckInTimeController.text}");
+                DateTime endDate = DateTime.parse(
+                    "${_accommodationCheckOutDateController.text} ${_accommodationCheckOutTimeController.text}");
+
+                if (startDate.isAfter(endDate)) {
+                  Fluttertoast.showToast(
+                      msg: "Please choose a valid date/time range",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.TOP,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
+                  return;
+                }
+
+                if (isEditing) {
+                  _editAccommodation(
+                      accommodation!.id,
+                      userId,
+                      tripId,
+                      _accommodationNameController.text,
+                      _accommodationConfirmationNumController.text,
+                      _accommodationAddressController.text,
+                      _accommodationCheckInDateController.text,
+                      _accommodationCheckOutDateController.text,
+                      _accommodationCheckInTimeController.text,
+                      _accommodationCheckOutTimeController.text);
+                } else {
+                  _addAccommodation(
+                      userId,
+                      tripId,
+                      _accommodationNameController.text,
+                      _accommodationConfirmationNumController.text,
+                      _accommodationAddressController.text,
+                      _accommodationCheckInDateController.text,
+                      _accommodationCheckOutDateController.text,
+                      _accommodationCheckInTimeController.text,
+                      _accommodationCheckOutTimeController.text);
+                }
+
+                Navigator.pop(context);
+
+                _accommodationNameController.clear();
+                _accommodationConfirmationNumController.clear();
+                _accommodationAddressController.clear();
+                _accommodationCheckInDateController.clear();
+                _accommodationCheckOutDateController.clear();
+                _accommodationCheckInTimeController.clear();
+                _accommodationCheckOutTimeController.clear();
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addAccommodation(
+      String userId,
+      String tripId,
+      String name,
+      String confirmationNum,
+      String address,
+      String checkInDate,
+      String checkOutDate,
+      String checkInTime,
+      String checkOutTime) async {
+    final accommodationAddResponse =
+        await AccommodationService('https://xplora.fun').addAccommodation(
+            userId,
+            tripId,
+            name,
+            confirmationNum,
+            address,
+            checkInDate,
+            checkOutDate,
+            checkInTime,
+            checkOutTime);
+
+    if (accommodationAddResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: accommodationAddResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: accommodationAddResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
+  void _editAccommodation(
+      String accommodationId,
+      String userId,
+      String tripId,
+      String name,
+      String confirmationNum,
+      String address,
+      String checkInDate,
+      String checkOutDate,
+      String checkInTime,
+      String checkOutTime) async {
+    final accommodationAddResponse =
+        await AccommodationService('https://xplora.fun').editAccommodation(
+            accommodationId,
+            userId,
+            tripId,
+            name,
+            confirmationNum,
+            address,
+            checkInDate,
+            checkOutDate,
+            checkInTime,
+            checkOutTime);
+
+    if (accommodationAddResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: accommodationAddResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: accommodationAddResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
+  void _showActivityDialog([Activity? activity]) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        if (isEditing && activity != null) {
+          _activityNameController.text = activity.name;
+          _activityDateController.text = activity.date;
+          _activityTimeController.text = activity.time;
+          _activityLocationController.text = activity.location;
+          _activityNotesController.text = activity.notes;
+        }
+
+        return AlertDialog(
+          title: Text(
+              isEditing ? 'Edit Activity Details' : 'Add Activity Details'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _activityNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _activityDateController,
+                      decoration: InputDecoration(
+                        labelText: 'Date',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        ).then((pickedDate) {
+                          if (pickedDate != null) {
+                            _activityDateController.text =
+                                "${pickedDate.toLocal()}".split(' ')[0];
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _activityTimeController,
+                      decoration: InputDecoration(
+                        labelText: 'Time',
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true,
+                      onTap: () => {
+                        showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ).then((pickedTime) {
+                          if (pickedTime != null) {
+                            String formattedTime =
+                                "${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                            _activityTimeController.text = formattedTime;
+                          }
+                        })
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _activityLocationController,
+                      decoration: InputDecoration(
+                        labelText: 'Location',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: _activityNotesController,
+                      decoration: InputDecoration(
+                        labelText: 'Notes',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+
+                _activityNameController.clear();
+                _activityDateController.clear();
+                _activityTimeController.clear();
+                _activityLocationController.clear();
+                _activityNotesController.clear();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_activityNameController.text.isEmpty ||
+                    _activityDateController.text.isEmpty ||
+                    _activityTimeController.text.isEmpty ||
+                    _activityLocationController.text.isEmpty ||
+                    _activityNotesController.text.isEmpty) {
+                  Fluttertoast.showToast(
+                      msg: "All fields are required",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.TOP,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white);
+                  return;
+                }
+
+                if (isEditing) {
+                  _editActivity(
+                      activity!.id,
+                      userId,
+                      tripId,
+                      _activityNameController.text,
+                      _activityDateController.text,
+                      _activityTimeController.text,
+                      _activityLocationController.text,
+                      _activityNotesController.text);
+                } else {
+                  _addActivity(
+                      userId,
+                      tripId,
+                      _activityNameController.text,
+                      _activityDateController.text,
+                      _activityTimeController.text,
+                      _activityLocationController.text,
+                      _activityNotesController.text);
+                }
+
+                Navigator.pop(context);
+
+                _activityNameController.clear();
+                _activityDateController.clear();
+                _activityTimeController.clear();
+                _activityLocationController.clear();
+                _activityNotesController.clear();
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addActivity(String userId, String tripId, String name, String date,
+      String time, String location, String notes) async {
+    final activityAddResponse = await ActivityService('https://xplora.fun')
+        .addActivity(userId, tripId, name, date, time, location, notes);
+
+    if (activityAddResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: activityAddResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: activityAddResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
+  void _editActivity(
+      String activityId,
+      String userId,
+      String tripId,
+      String name,
+      String date,
+      String time,
+      String location,
+      String notes) async {
+    final activityAddResponse = await ActivityService('https://xplora.fun')
+        .editActivity(
+            activityId, userId, tripId, name, date, time, location, notes);
+
+    if (activityAddResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: activityAddResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
+    }
+
+    Fluttertoast.showToast(
+        msg: activityAddResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -607,6 +1502,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                           );
                         },
                         (categoryName) => Icons.flight_takeoff,
+                        _showFlightDialog,
                       ),
                       _buildCategorySection<Accommodation>(
                         'Accommodations',
@@ -619,6 +1515,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                           );
                         },
                         (categoryName) => Icons.hotel,
+                        _showAccommodationDialog,
                       ),
                       _buildCategorySection<Activity>(
                         'Activities',
@@ -629,8 +1526,8 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                             subtitle: Text('Details: ${activity.location}'),
                           );
                         },
-                        (categoryName) =>
-                            Icons.local_activity, // Icon for Activities
+                        (categoryName) => Icons.local_activity,
+                        _showActivityDialog,
                       ),
                     ],
                   ),
@@ -648,6 +1545,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     Future<List<T>> itemsFuture,
     Widget Function(BuildContext, T) itemBuilder,
     IconData Function(String) getCategoryIcon,
+    void Function([T? item]) showDialogWidget,
   ) {
     final theme = Theme.of(context).copyWith(dividerColor: Colors.transparent);
 
@@ -673,10 +1571,8 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                 IconButton(
                   icon: const Icon(Icons.add, color: Color(0xFF6A0DAD)),
                   onPressed: () {
-                    // Handle the "Add" button action here
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Add to $categoryName')),
-                    );
+                    isEditing = false;
+                    showDialogWidget();
                   },
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
@@ -717,7 +1613,13 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                   } else {
                     return Column(
                       children: snapshot.data!.map((item) {
-                        return itemBuilder(context, item);
+                        return GestureDetector(
+                          onTap: () {
+                            isEditing = true;
+                            showDialogWidget(item);
+                          },
+                          child: itemBuilder(context, item),
+                        );
                       }).toList(),
                     );
                   }
