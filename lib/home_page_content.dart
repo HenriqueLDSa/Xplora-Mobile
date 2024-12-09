@@ -1,11 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 import 'package:logger/logger.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xplora/services/trip_service.dart';
 import 'package:xplora/trip_details_page.dart';
 import 'objects/trip.dart';
 import 'package:image_picker/image_picker.dart';
@@ -39,15 +37,15 @@ class _HomePageContentState extends State<HomePageContent> {
       TextEditingController(text: 'No photo selected');
   File? _photoFile;
 
-  Future<List<Trip>>? _futureItems;
+  Future<List<Trip>>? futureTrips;
 
   late String userId;
 
   @override
   void initState() {
     super.initState();
-    _loadTrips();
     _getUserID();
+    _loadTrips();
   }
 
   Future<void> _getUserID() async {
@@ -57,97 +55,35 @@ class _HomePageContentState extends State<HomePageContent> {
     });
   }
 
-  Future<List<Trip>> fetchTrips(String userId) async {
-    final response =
-        await http.get(Uri.parse('https://xplora.fun/api/users/$userId/trips'));
-
-    if (response.statusCode == 200) {
-      try {
-        List jsonResponse = json.decode(response.body);
-        return jsonResponse.map((item) => Trip.fromJson(item)).toList();
-      } catch (e) {
-        throw Exception('Failed to decode trips data');
-      }
-    } else {
-      var jsonResponse = json.decode(response.body);
-      if (jsonResponse is Map && jsonResponse.containsKey('error')) {
-        throw Exception(jsonResponse['error']);
-      } else {
-        throw Exception('Failed to fetch trips');
-      }
-    }
-  }
-
   Future<void> _loadTrips() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString('userId');
-
     setState(() {
-      _futureItems = fetchTrips(userId!);
+      futureTrips = TripService('https://xplora.fun').fetchTrips(userId);
     });
   }
 
-  Future<void> _refresh() async {
-    await _loadTrips();
-  }
+  void _addTrip(String userId, String name, String city, String startDate,
+      String endDate, String notes, File? photo) async {
+    final tripAddResponse = await TripService('https://xplora.fun')
+        .addTrip(userId, name, city, startDate, endDate, notes, photo);
 
-  Future<void> _addTrip(String reqName, String reqCity, String reqStartDate,
-      String reqEndDate, String reqNotes, File? photo) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString('userId');
+    if (tripAddResponse['status_code'] == 201) {
+      Fluttertoast.showToast(
+          msg: tripAddResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
 
-    final Uri uri = Uri.parse('https://xplora.fun/api/users/$userId/trips');
-
-    var request = http.MultipartRequest('POST', uri);
-    request.fields['name'] = reqName;
-    request.fields['city'] = reqCity;
-    request.fields['start_date'] = reqStartDate;
-    request.fields['end_date'] = reqEndDate;
-    request.fields['notes'] = reqNotes;
-
-    if (photo != null) {
-      var mimeType = lookupMimeType(photo.path);
-
-      if (mimeType == null) {
-        logger.e('Failed to detect MIME type');
-        Fluttertoast.showToast(
-            msg: 'Unexpected Error',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.TOP,
-            backgroundColor: Colors.red,
-            textColor: Colors.white);
-        return;
-      }
-
-      logger.d('MIME Type: $mimeType');
-
-      var photoFile = await http.MultipartFile.fromPath('photo', photo.path,
-          contentType: MediaType.parse(mimeType));
-      request.files.add(photoFile);
+      return;
     }
 
-    try {
-      logger.d('Final URL: ${request.url}');
-      var response = await request.send();
-
-      logger.d(response.statusCode);
-
-      if (response.statusCode == 201) {
-        final responseBody = await response.stream.bytesToString();
-        final responseData = jsonDecode(responseBody);
-        logger.d('Trip added successfully: ${responseData['trip_id']}');
-        _loadTrips();
-      } else {
-        final responseBody = await response.stream.bytesToString();
-        final responseData = jsonDecode(responseBody);
-        logger.d('Failed to add trip: ${responseData['error']}');
-      }
-    } catch (e) {
-      logger.e('Error occurred: $e');
-    }
+    Fluttertoast.showToast(
+        msg: tripAddResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
   }
 
-  Future<void> navigateToTripDetails(BuildContext context, Trip trip) async {
+  void navigateToTripDetails(BuildContext context, Trip trip) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -165,7 +101,7 @@ class _HomePageContentState extends State<HomePageContent> {
     );
 
     if (result == 'delete' || result == 'back') {
-      _refresh();
+      _loadTrips();
     }
   }
 
@@ -391,6 +327,7 @@ class _HomePageContentState extends State<HomePageContent> {
                 }
 
                 _addTrip(
+                    userId,
                     _tripNameController.text,
                     _tripLocationController.text,
                     _tripStartDateController.text,
@@ -472,7 +409,7 @@ class _HomePageContentState extends State<HomePageContent> {
                 SizedBox(height: 4),
                 Expanded(
                   child: FutureBuilder<List<Trip>>(
-                    future: _futureItems,
+                    future: futureTrips,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
@@ -514,7 +451,7 @@ class _HomePageContentState extends State<HomePageContent> {
                         );
                       } else {
                         return RefreshIndicator(
-                          onRefresh: _refresh,
+                          onRefresh: _loadTrips,
                           child: ListView.builder(
                             itemCount: snapshot.data!.length,
                             itemBuilder: (context, index) {

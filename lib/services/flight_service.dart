@@ -68,14 +68,12 @@ class FlightService {
     final jsonResponseData = json.decode(response.body);
 
     if (response.statusCode == 201) {
-      logger.d(jsonResponseData['message']);
       return {
         'status_code': response.statusCode,
         'message': jsonResponseData['message']
       };
     }
 
-    logger.e(jsonResponseData['error']);
     return {
       'status_code': response.statusCode,
       'message': jsonResponseData['error']
