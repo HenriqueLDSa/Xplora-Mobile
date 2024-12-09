@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:xplora/login_page.dart';
 import 'package:xplora/register_page.dart';
 
-
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center( // Centers the Column in the body
+      body: Center(
+        // Centers the Column in the body
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -39,41 +39,52 @@ class WelcomePage extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: 200,
-                      height: 55, 
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xCC451992), // Set the background color here
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
-                          ),
-                        ),
-                        child: Text('Sign In', style: TextStyle(color: Colors.white, fontSize: 16),),
-                      ),
-                    ),
-                    SizedBox(height: 20), // Vertical space between buttons
-                    SizedBox(
-                      width: 200, 
                       height: 55,
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => SignUpPage()),
+                            MaterialPageRoute(
+                                builder: (context) => LoginPage()),
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xCC451992), // Set the background color here
+                          backgroundColor: Color(
+                              0xCC451992), // Set the background color here
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // Adjust the radius as needed
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16),),
+                        child: Text(
+                          'Sign In',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20), // Vertical space between buttons
+                    SizedBox(
+                      width: 200,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SignUpPage()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(
+                              0xCC451992), // Set the background color here
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                10), // Adjust the radius as needed
+                          ),
+                        ),
+                        child: Text(
+                          'Sign Up',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
                       ),
                     ),
                   ],
