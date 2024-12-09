@@ -14,6 +14,7 @@ import 'package:xplora/services/flight_service.dart';
 import 'dart:convert';
 
 import 'package:xplora/objects/flight.dart';
+import 'package:xplora/services/trip_service.dart';
 
 class TripDetailsPage extends StatefulWidget {
   final String userId;
@@ -152,27 +153,28 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
   }
 
   Future<void> _deleteTrip() async {
-    final Uri uri =
-        Uri.parse("https://xplora.fun/api/users/$userId/trips/$tripId");
+    final tripDeleteResponse =
+        await TripService("https://xplora.fun").deleteTrip(userId, tripId);
 
-    final response = await http.delete(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    final jsonResponse = json.decode(response.body);
-
-    if (response.statusCode == 200) {
+    if (tripDeleteResponse['status_code'] == 200) {
       Fluttertoast.showToast(
-        msg: jsonResponse['message'],
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.TOP,
-      );
+          msg: tripDeleteResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
 
       if (mounted) {
         Navigator.pop(context, 'delete');
       }
+
+      return;
     }
+
+    Fluttertoast.showToast(
+        msg: tripDeleteResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
   }
 
   void _editTrip() {

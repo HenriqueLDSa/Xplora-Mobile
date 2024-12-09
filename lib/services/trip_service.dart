@@ -94,6 +94,25 @@ class TripService {
   }
 
   //EDIT TRIPS
+  /* Add function here */
 
-  //DELETE TRIPS
+  Future<Map<String, dynamic>> deleteTrip(String userId, String tripId) async {
+    final Uri uri = Uri.parse("$baseUrl/api/users/$userId/trips/$tripId");
+
+    final response = await http.delete(uri);
+
+    final jsonResponse = json.decode(response.body);
+
+    if (response.statusCode == 200) {
+      return {
+        'status_code': response.statusCode,
+        'message': jsonResponse['message']
+      };
+    }
+
+    return {
+      'status_code': response.statusCode,
+      'message': jsonResponse['error']
+    };
+  }
 }
