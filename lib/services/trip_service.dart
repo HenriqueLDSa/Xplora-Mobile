@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:logger/logger.dart';
@@ -36,12 +34,6 @@ class TripService {
       var mimeType = lookupMimeType(photo.path);
 
       if (mimeType == null) {
-        Fluttertoast.showToast(
-            msg: 'Unexpected Error',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.TOP,
-            backgroundColor: Colors.red,
-            textColor: Colors.white);
         return {'status_code': 500, 'message': 'Failed to detect file type'};
       }
 
@@ -93,8 +85,57 @@ class TripService {
     }
   }
 
-  //EDIT TRIPS
-  /* Add function here */
+  Future<Map<String, dynamic>> editTrip(
+      String userId,
+      String tripId,
+      String? name,
+      String? city,
+      String? startDate,
+      String? endDate,
+      String? notes,
+      File? photo) async {
+    final Uri uri = Uri.parse('$baseUrl/api/users/$userId/trips/$tripId');
+
+    var request = http.MultipartRequest('PUT', uri);
+    name != null ? request.fields['name'] = name : null;
+    city != null ? request.fields['city'] = city : null;
+    startDate != null ? request.fields['start_date'] = startDate : null;
+    endDate != null ? request.fields['end_date'] = endDate : null;
+    notes != null ? request.fields['notes'] = notes : null;
+
+    if (photo != null) {
+      var mimeType = lookupMimeType(photo.path);
+
+      if (mimeType == null) {
+        return {'status_code': 500, 'message': 'Failed to detect file type'};
+      }
+
+      var photoFile = await http.MultipartFile.fromPath('photo', photo.path,
+          contentType: MediaType.parse(mimeType));
+      request.files.add(photoFile);
+    }
+
+    try {
+      var response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final responseData = jsonDecode(responseBody);
+
+      if (response.statusCode == 201) {
+        return {
+          'status_code': response.statusCode,
+          'message': responseData['message'],
+          'picture_url': responseData['picture_url;']
+        };
+      }
+
+      return {
+        'status_code': response.statusCode,
+        'message': responseData['error']
+      };
+    } catch (e) {
+      return {'status_code': 500, 'message': e.toString()};
+    }
+  }
 
   Future<Map<String, dynamic>> deleteTrip(String userId, String tripId) async {
     final Uri uri = Uri.parse("$baseUrl/api/users/$userId/trips/$tripId");

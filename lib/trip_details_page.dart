@@ -1,18 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:mime/mime.dart';
-import 'package:http/http.dart' as http;
 import 'package:xplora/objects/accommodation.dart';
 import 'package:xplora/objects/activity.dart';
 import 'package:xplora/services/accommodation_service.dart';
 import 'package:xplora/services/activity_service.dart';
 import 'package:xplora/services/flight_service.dart';
-import 'dart:convert';
-
 import 'package:xplora/objects/flight.dart';
 import 'package:xplora/services/trip_service.dart';
 
@@ -148,7 +144,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
     if (value == 'delete') {
       _deleteTrip();
     } else if (value == 'edit') {
-      _editTrip();
+      _showEditTripDialog();
     }
   }
 
@@ -177,87 +173,42 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
         textColor: Colors.white);
   }
 
-  void _editTrip() {
-    _tripNameController.text = tripName;
-    _tripLocationController.text = tripCity;
-    _tripStartDateController.text = tripStartDate;
-    _tripEndDateController.text = tripEndDate;
-    _tripNotesController.text = tripNotes;
-    _showEditTripDialog();
-  }
+  void _editTrip(String? name, String? city, String? startDate, String? endDate,
+      String? notes, File? photo) async {
+    final tripEditResponse = await TripService('https://xplora.fun')
+        .editTrip(userId, tripId, name, city, startDate, endDate, notes, photo);
 
-  Future<void> _editTripRequest(
-      String? reqName,
-      String? reqCity,
-      String? reqStartDate,
-      String? reqEndDate,
-      String? reqNotes,
-      File? photo) async {
-    final Uri uri =
-        Uri.parse('https://xplora.fun/api/users/$userId/trips/$tripId');
+    if (tripEditResponse['status_code'] == 201) {
+      setState(() {
+        tripName = name ?? tripName;
+        tripCity = city ?? tripCity;
+        tripStartDate = startDate ?? tripStartDate;
+        tripEndDate = endDate ?? tripEndDate;
+        tripDate = '$tripStartDate - $tripEndDate';
+        tripNotes = notes ?? tripNotes;
+      });
 
-    var request = http.MultipartRequest('PUT', uri);
-    reqName != null ? request.fields['name'] = reqName : null;
-    reqCity != null ? request.fields['city'] = reqCity : null;
-    reqStartDate != null ? request.fields['start_date'] = reqStartDate : null;
-    reqEndDate != null ? request.fields['end_date'] = reqEndDate : null;
-    reqNotes != null ? request.fields['notes'] = reqNotes : null;
-
-    if (photo != null) {
-      var mimeType = lookupMimeType(photo.path);
-
-      if (mimeType == null) {
-        logger.e('Failed to detect MIME type');
-        Fluttertoast.showToast(
-            msg: 'Unexpected Error',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.TOP,
-            backgroundColor: Colors.red,
-            textColor: Colors.white);
-        return;
-      }
-
-      logger.d('MIME Type: $mimeType');
-
-      var photoFile = await http.MultipartFile.fromPath('photo', photo.path,
-          contentType: MediaType.parse(mimeType));
-      request.files.add(photoFile);
-    }
-
-    try {
-      logger.d('Final URL: ${request.url}');
-      var response = await request.send();
-
-      logger.d(response.statusCode);
-
-      if (response.statusCode == 201) {
-        final responseBody = await response.stream.bytesToString();
-        final responseData = jsonDecode(responseBody);
-        logger.d('Trip updated successfully');
-
+      if (photo != null) {
         setState(() {
-          tripName = reqName ?? tripName;
-          tripCity = reqCity ?? tripCity;
-          tripStartDate = reqStartDate ?? tripStartDate;
-          tripEndDate = reqEndDate ?? tripEndDate;
-          tripDate = '$tripStartDate - $tripEndDate';
-          tripNotes = reqNotes ?? tripNotes;
+          String fileName = tripEditResponse['picture_url'];
+          photoUrl = "https://xplora.fun$fileName";
         });
-
-        if (photo != null) {
-          setState(() {
-            String fileName = responseData['picture_url'];
-            photoUrl = "https://xplora.fun$fileName";
-          });
-        }
-      } else {
-        final responseBody = await response.stream.bytesToString();
-        final responseData = jsonDecode(responseBody);
-        logger.d('Failed to update trip: ${responseData['error']}');
       }
-    } catch (e) {
-      logger.e('Error occurred: $e');
+
+      Fluttertoast.showToast(
+          msg: tripEditResponse['message'],
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP);
+
+      return;
     }
+
+    Fluttertoast.showToast(
+        msg: tripEditResponse['message'],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white);
   }
 
   void _pickImage(ImageSource source, void Function(void Function()) setState) {
@@ -303,6 +254,12 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
   }
 
   void _showEditTripDialog() {
+    _tripNameController.text = tripName;
+    _tripLocationController.text = tripCity;
+    _tripStartDateController.text = tripStartDate;
+    _tripEndDateController.text = tripEndDate;
+    _tripNotesController.text = tripNotes;
+
     showDialog(
       context: context,
       builder: (context) {
@@ -468,7 +425,7 @@ class _TripDetailsPageState extends State<TripDetailsPage> {
                   return;
                 }
 
-                _editTripRequest(
+                _editTrip(
                     _tripNameController.text,
                     _tripLocationController.text,
                     _tripStartDateController.text,
